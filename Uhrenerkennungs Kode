@@ -1,88 +1,430 @@
 <!DOCTYPE html>
-<html lang="de" class="dark">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horologium — Präzise Uhren-Identifikation mit KI</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        gold: {
-                            50: '#fbf8ee',
-                            100: '#f5edd4',
-                            200: '#ebd9a9',
-                            300: '#dfbe75',
-                            400: '#d4a34b',
-                            500: '#bd8832',
-                            600: '#9e6c27',
-                            700: '#7e5322',
-                            800: '#684422',
-                            900: '#573820',
-                            950: '#321e0f',
-                        },
-                        watchdark: {
-                            900: '#0b0c10',
-                            800: '#12141c',
-                            700: '#1a1d26',
-                            600: '#262a36'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Horologium — Präzise Uhren-Identifikation</title>
     <style>
+        :root {
+            --bg-dark: #0b0c10;
+            --panel-bg: rgba(26, 29, 38, 0.9);
+            --gold: #d4a34b;
+            --gold-light: #f5edd4;
+            --gold-dark: #9e6c27;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .cinzel {
-            font-family: 'Cinzel', serif;
+        header {
+            background: var(--panel-bg);
+            border-bottom: 1px solid rgba(212, 163, 75, 0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
         }
-        .glass-panel {
-            background: rgba(26, 29, 38, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(213, 163, 75, 0.2);
+        .logo-area { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(212, 163, 75, 0.1);
+            border: 1px solid rgba(212, 163, 75, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold); font-weight: bold; font-size: 1.2rem;
         }
+        .logo-text h1 { font-size: 1.25rem; color: var(--gold-light); letter-spacing: 1px; font-family: serif; }
+        .logo-text span { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+        
+        .btn {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 0.85rem;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-secondary {
+            background: #1a1d26;
+            color: var(--gold-light);
+            border: 1px solid rgba(212, 163, 75, 0.3);
+        }
+
+        main {
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 2rem;
+            flex-grow: 1;
+        }
+        @media (max-width: 900px) {
+            main { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(212, 163, 75, 0.2);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        .panel h2 { font-size: 1.1rem; color: var(--gold-light); margin-bottom: 0.5rem; font-family: serif; }
+        .panel p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+        .tabs {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+            background: #12141c; padding: 0.3rem; border-radius: 1rem; margin-bottom: 1.5rem;
+            border: 1px solid rgba(212, 163, 75, 0.1);
+        }
+        .tab-btn {
+            background: transparent; color: var(--text-muted); border: none; padding: 0.6rem;
+            border-radius: 0.75rem; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+        }
+        .tab-btn.active { background: var(--gold); color: #000; }
+
+        .drop-zone {
+            border: 2px dashed rgba(212, 163, 75, 0.3);
+            border-radius: 1rem; padding: 2rem; text-align: center;
+            background: rgba(18, 20, 28, 0.4); position: relative; cursor: pointer;
+        }
+        .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+        .preview-box { margin-top: 1.5rem; display: none; }
+        .preview-box img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 1rem; border: 1px solid rgba(212,163,75,0.3); background: #000; }
+
+        .video-box { width: 100%; aspect-ratio: 1; background: #000; border-radius: 1rem; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(212,163,75,0.3); }
+        .video-box video { width: 100%; height: 100%; object-fit: cover; }
+
+        .results-container { display: flex; flex-direction: column; gap: 1rem; }
+        .placeholder-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 400px; text-align: center; color: var(--text-muted); }
+        .loading-state { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 400px; text-align: center; }
+        
+        .spinner {
+            width: 50px; height: 50px; border: 4px solid rgba(212,163,75,0.2);
+            border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-card { display: none; flex-direction: column; gap: 1rem; }
+        .badge { display: inline-block; background: rgba(212,163,75,0.1); color: var(--gold); border: 1px solid rgba(212,163,75,0.3); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+        .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
+        .spec-item { background: #12141c; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid rgba(212,163,75,0.15); font-size: 0.8rem; }
+        .spec-item span { display: block; color: var(--text-muted); font-size: 0.7rem; margin-bottom: 0.2rem; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-content { background: var(--panel-bg); border: 1px solid rgba(212,163,75,0.3); border-radius: 1.5rem; padding: 2rem; max-width: 400px; width: 100%; }
+        .modal-content input { width: 100%; background: #12141c; border: 1px solid rgba(212,163,75,0.3); padding: 0.75rem; border-radius: 0.75rem; color: #fff; margin: 1rem 0; font-size: 0.9rem; }
+        
+        footer { text-align: center; padding: 1.5rem; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid rgba(212,163,75,0.1); margin-top: auto; }
     </style>
 </head>
-<body class="bg-watchdark-900 text-gray-100 min-h-screen flex flex-col selection:bg-gold-500 selection:text-black">
+<body>
 
-    <!-- Header -->
-    <header class="glass-panel sticky top-0 z-50 border-b border-gold-900/40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-gold-500/10 border border-gold-500/40 flex items-center justify-center text-gold-400">
-                    <i data-lucide="watch" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <span class="cinzel text-xl sm:text-2xl font-bold tracking-wider text-gold-300">HOROLOGIUM</span>
-                    <span class="block text-[10px] tracking-widest text-gray-400 uppercase">Precision Watch Intelligence</span>
-                </div>
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">Ω</div>
+            <div class="logo-text">
+                <h1>HOROLOGIUM</h1>
+                <span>Precision Watch Intelligence</span>
             </div>
-            
-            <!-- API Key Status / Setting -->
-            <div class="flex items-center space-x-3">
-                <div id="api-status-badge" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs bg-red-500/10 text-red-400 border border-red-500/30">
-                    <span class="w-2 h-2 rounded-full bg-red-400"></span>
-                    <span id="api-status-text">API-Key fehlt</span>
-                </div>
-                <button onclick="openApiKeyModal()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-watchdark-700 hover:bg-watchdark-600 border border-gold-500/20 text-gold-300 transition-all text-xs font-medium">
-                    <i data-lucide="key" class="w-4 h-4"></i>
-                    <span class="hidden md:inline">API-Key verwalten</span>
-                </button>
-            </div>
+        </div>
+        <div>
+            <button class="btn btn-secondary" onclick="openModal()">API-Key verwalten</button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg
+    <main>
+        <!-- Left: Input -->
+        <section class="panel">
+            <h2>Uhr erfassen</h2>
+            <p>Fotografiere das Zifferblatt oder lade ein Bild hoch.</p>
+
+            <div class="tabs">
+                <button id="t-upload" class="tab-btn active" onclick="switchTab('upload')">Datei-Upload</button>
+                <button id="t-cam" class="tab-btn" onclick="switchTab('cam')">Live-Kamera</button>
+            </div>
+
+            <!-- Upload Panel -->
+            <div id="panel-upload">
+                <div class="drop-zone">
+                    <input type="file" accept="image/*" onchange="handleFile(event)">
+                    <p><strong>Klicken zum Hochladen</strong> oder Bild hierher ziehen</p>
+                </div>
+            </div>
+
+            <!-- Camera Panel -->
+            <div id="panel-cam" style="display: none;">
+                <div class="video-box">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" style="display:none;"></canvas>
+                    <div id="cam-off" style="position:absolute; color: var(--text-muted); font-size: 0.8rem;">Kamera inaktiv</div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="btn btn-secondary" style="flex:1;" onclick="toggleCam()" id="cam-toggle-btn">Kamera starten</button>
+                    <button class="btn" onclick="takeSnapshot()" id="snap-btn" disabled>Foto aufnehmen</button>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div id="preview-box" class="preview-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Vorschau</span>
+                    <button onclick="clearImage()" style="background:none; border:none; color:#ef4444; font-size:0.75rem; cursor:pointer;">Entfernen</button>
+                </div>
+                <img id="preview-img" src="" alt="Vorschau">
+            </div>
+
+            <button class="btn" style="width: 100%; margin-top: 1.5rem; padding: 0.9rem;" id="analyze-btn" onclick="analyzeWatch()" disabled>Uhr analysieren</button>
+        </section>
+
+        <!-- Right: Results -->
+        <section class="panel results-container">
+            <!-- Placeholder -->
+            <div id="state-placeholder" class="placeholder-state">
+                <h3>Bereit für Analyse</h3>
+                <p>Lade ein Foto hoch oder nimm eins auf, um Details abzurufen.</p>
+            </div>
+
+            <!-- Loading -->
+            <div id="state-loading" class="loading-state">
+                <div class="spinner"></div>
+                <h3 style="font-family: serif; color: var(--gold-light);">Analysiere Horologie-Merkmale...</h3>
+                <p>Gemini Vision untersucht Zifferblatt, Indizes und Gehäuse.</p>
+            </div>
+
+            <!-- Result Content -->
+            <div id="state-result" class="result-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span id="res-brand" class="badge">Rolex</span>
+                    <span id="res-confidence" style="font-size: 0.8rem; color: #10b981; font-weight: bold;">98% Konfidenz</span>
+                </div>
+                <h2 id="res-model" style="font-size: 1.8rem; color: #fff;">Submariner Date</h2>
+                <p id="res-ref" style="font-family: monospace; color: var(--gold);">Ref. 126610LN</p>
+
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <span>Marktwert</span>
+                        <strong id="res-value" style="color: var(--gold-light);">14.500 €</strong>
+                    </div>
+                    <div class="spec-item">
+                        <span>Uhrwerk</span>
+                        <strong id="res-movement">Cal. 3235</strong>
+                    </div>
+                    <div class="spec-item">
+                        <span>Gehäuse & Durchmesser</span>
+                        <strong id="res-case">41 mm Oystersteel</strong>
+                    </div>
+                    <div class="spec-item">
+                        <span>Wasserdicht</span>
+                        <strong id="res-water">300m / 30 Bar</strong>
+                    </div>
+                </div>
+
+                <div style="background: #12141c; padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(212,163,75,0.15); margin-top: 0.5rem;">
+                    <span style="display:block; color: var(--gold); font-size: 0.75rem; margin-bottom: 0.3rem; text-transform: uppercase;">Modellgeschichte</span>
+                    <p id="res-history" style="font-size: 0.85rem; line-height: 1.4; color: var(--text-muted);"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal -->
+    <div id="api-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="font-family: serif; color: var(--gold-light); margin-bottom: 0.5rem;">Gemini API-Key</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Trage deinen kostenlosen API-Key aus dem Google AI Studio ein.</p>
+            <input type="password" id="api-input" placeholder="AIzaSy...">
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn" style="flex:1;" onclick="saveKey()">Speichern</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Horologium • Angetrieben durch Gemini Vision API
+    </footer>
+
+    <script>
+        let apiKey = localStorage.getItem('gemini_key') || '';
+        let base64Data = null;
+        let mimeType = 'image/jpeg';
+        let mediaStream = null;
+
+        function openModal() {
+            document.getElementById('api-input').value = apiKey;
+            document.getElementById('api-modal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('api-modal').style.display = 'none'; }
+        function saveKey() {
+            apiKey = document.getElementById('api-input').value.trim();
+            localStorage.setItem('gemini_key', apiKey);
+            closeModal();
+            if(!apiKey) alert('Kein API-Key hinterlegt.');
+        }
+
+        function switchTab(tab) {
+            if(tab === 'upload') {
+                document.getElementById('t-upload').classList.add('active');
+                document.getElementById('t-cam').classList.remove('active');
+                document.getElementById('panel-upload').style.display = 'block';
+                document.getElementById('panel-cam').style.display = 'none';
+                stopCam();
+            } else {
+                document.getElementById('t-cam').classList.add('active');
+                document.getElementById('t-upload').classList.remove('active');
+                document.getElementById('panel-cam').style.display = 'block';
+                document.getElementById('panel-upload').style.display = 'none';
+                startCam();
+            }
+        }
+
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            mimeType = file.type || 'image/jpeg';
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const full = evt.target.result;
+                base64Data = full.split(',')[1];
+                document.getElementById('preview-img').src = full;
+                document.getElementById('preview-box').style.display = 'block';
+                document.getElementById('analyze-btn').removeAttribute('disabled');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function startCam() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                document.getElementById('video').srcObject = mediaStream;
+                document.getElementById('cam-off').style.display = 'none';
+                document.getElementById('cam-toggle-btn').textContent = 'Kamera stoppen';
+                document.getElementById('snap-btn').removeAttribute('disabled');
+            } catch(err) {
+                alert('Kamerazugriff verweigert oder nicht verfügbar: ' + err.message);
+            }
+        }
+
+        function stopCam() {
+            if(mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
+            document.getElementById('video').srcObject = null;
+            document.getElementById('cam-off').style.display = 'block';
+            document.getElementById('cam-toggle-btn').textContent = 'Kamera starten';
+            document.getElementById('snap-btn').setAttribute('disabled', 'true');
+        }
+
+        function toggleCam() {
+            if(mediaStream) stopCam(); else startCam();
+        }
+
+        function takeSnapshot() {
+            const v = document.getElementById('video');
+            const c = document.getElementById('canvas');
+            c.width = v.videoWidth || 1280;
+            c.height = v.videoHeight || 720;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(v, 0, 0, c.width, c.height);
+            const dataUrl = c.toDataURL('image/jpeg');
+            mimeType = 'image/jpeg';
+            base64Data = dataUrl.split(',')[1];
+
+            document.getElementById('preview-img').src = dataUrl;
+            document.getElementById('preview-box').style.display = 'block';
+            document.getElementById('analyze-btn').removeAttribute('disabled');
+            stopCam();
+            switchTab('upload');
+        }
+
+        function clearImage() {
+            base64Data = null;
+            document.getElementById('preview-box').style.display = 'none';
+            document.getElementById('analyze-btn').setAttribute('disabled', 'true');
+        }
+
+        async function analyzeWatch() {
+            if(!apiKey) {
+                alert('Bitte trage zuerst deinen Gemini API-Key ein.');
+                openModal();
+                return;
+            }
+            if(!base64Data) return;
+
+            document.getElementById('state-placeholder').style.display = 'none';
+            document.getElementById('state-result').style.display = 'none';
+            document.getElementById('state-loading').style.display = 'flex';
+
+            const prompt = `Analysiere dieses Uhrenfoto als Experte. Gib NUR ein gültiges JSON-Objekt zurück (kein Markdown, kein Text drumherum):
+{
+  "brand": "Marke",
+  "model": "Modell",
+  "reference": "Referenznummer",
+  "confidence": "95%",
+  "estimatedValue": "Wert ca. in Euro",
+  "movement": "Uhrwerk",
+  "caseMaterial": "Gehäuse & Größe",
+  "waterResistance": "Wasserdichtigkeit",
+  "history": "Kurze Modellgeschichte auf Deutsch (3 Sätze)"
+}`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }]
+                    })
+                });
+
+                if(!res.ok) throw new Error('API-Anfrage fehlgeschlagen.');
+
+                const json = await res.json();
+                const rawText = json.candidates[0].content.parts[0].text;
+                const clean = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const data = JSON.parse(clean);
+
+                document.getElementById('res-brand').textContent = data.brand || 'Unbekannt';
+                document.getElementById('res-model').textContent = data.model || 'Uhr';
+                document.getElementById('res-ref').textContent = data.reference || '';
+                document.getElementById('res-confidence').textContent = data.confidence || '90%';
+                document.getElementById('res-value').textContent = data.estimatedValue || 'Auf Anfrage';
+                document.getElementById('res-movement').textContent = data.movement || '-';
+                document.getElementById('res-case').textContent = data.caseMaterial || '-';
+                document.getElementById('res-water').textContent = data.waterResistance || '-';
+                document.getElementById('res-history').textContent = data.history || '-';
+
+                document.getElementById('state-loading').style.display = 'none';
+                document.getElementById('state-result').style.display = 'flex';
+
+            } catch(e) {
+                alert('Fehler bei der Analyse: ' + e.message);
+                document.getElementById('state-loading').style.display = 'none';
+                document.getElementById('state-placeholder').style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>
